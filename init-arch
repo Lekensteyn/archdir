@@ -84,7 +84,7 @@ echo -e 'syntax on\nset number bg=dark smartindent hlsearch' > etc/skel/.vimrc
 wget -O etc/skel/.screenrc https://lekensteyn.nl/files/screenrc
 mkdir -p etc/skel/.ssh
 wget -O etc/skel/.ssh/authorized_keys https://lekensteyn.nl/sshkeys.txt
-cp -r etc/skel/ root/
+cp -r etc/skel/. root/
 useradd -R $PWD -m -G wheel -s /bin/bash $MYUSER
 
 rm -rf var/cache/pacman/pkg
