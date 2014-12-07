@@ -10,8 +10,11 @@ mounts='/etc/resolv.conf /etc/localtime'
 mounts+=' /etc/pacman.d'
 cleanup() {
     #bash -i || :
-    pkill -F /run/haveged.pid || :
-    pkill -F /run/dhclient.pid || :
+    for pidfile in /run/haveged.pid /run/dhclient.pid; do
+        pkill -F $pidfile || :
+        rm -f $pidfile
+    done
+    rm -f /run/dhclient-script
     umount $mounts || :
 }
 # Ensure that no services are running when done
@@ -59,7 +62,7 @@ pacman-key --gpgdir etc/pacman.d/gnupg --refresh-keys || :
 pacstrap -C etc/pacman.conf -M . base base-devel
 # Restore files
 for file in etc/resolv.conf etc/pacman.{conf,d/mirrorlist}; do
-    [ ! -e $file.pacnew ] || mv -f $file.pacnew $file
+    [ ! -e $file.pacorig ] || mv -f $file.pacorig $file
 done
 
 # SSH (disable by default since its dependencies may affect packages)
