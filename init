@@ -2,29 +2,12 @@
 # Requires: mount, mkdir, umount, losetup, chroot, pivot_root, uname
 set -e -u
 
-mountbase() {
-    cd $1
-    mkdir -p proc sys dev run
-    # Mount base filesystems
-    mount -t proc       none proc
-    mount -t sysfs      none sys
-    mount -t devtmpfs   none dev
-    mkdir -p dev/pts dev/shm
-    mount -t tmpfs      none dev/shm
-    mount -t devpts     devpts dev/pts
-    # http://www.freedesktop.org/wiki/Software/systemd/InitrdInterface/
-    mount -t tmpfs -o nosuid,nodev,mode=755 none run
-}
-umountbase() {
-    cd $1
-    umount dev/pts dev/shm dev sys proc run
-}
-
 # Init env
 umask 22
-export PATH=/usr/bin:/usr/sbin:/bin:/sbin
-/bin/busybox mkdir -p /usr/bin /usr/sbin /bin /sbin
-/bin/busybox --install -s
+set -x # DEBUG
+#export PATH=/usr/bin:/usr/sbin:/bin:/sbin
+#/bin/busybox mkdir -p /usr/bin /usr/sbin /bin /sbin
+#/bin/busybox --install -s
 
 mods='atkbd virtio_ring virtio virtio_net virtio_pci virtio_blk'
 mods="$mods isofs loop squashfs ext4"
@@ -32,32 +15,44 @@ for mod in $mods; do
     modprobe -v $mod || :
 done
 
-# target directory
-mkdir target && mount -t tmpfs -o size=80% none target
-set -x # DEBUG
-# Mount devtmpfs for archiso (/arch)
-mkdir -p dev archiso sqfs arch
+# Mount base filesystems
+mkdir -p proc sys dev run
+mount -t proc       none proc
+mount -t sysfs      none sys
+mount -t devtmpfs   none dev
+mkdir -p dev/pts dev/shm
+mount -t tmpfs      none dev/shm
+mount -t devpts     devpts dev/pts
+# http://www.freedesktop.org/wiki/Software/systemd/InitrdInterface/
+mount -t tmpfs -o nosuid,nodev,mode=755 none run
+
+# Increase rootfs size (needs procfs)
+mount -o remount,size=80% /
+
+mkdir install_tmp && cd install_tmp # Now in separate dir
+mkdir -p archiso sqfs arch
 # vda1 is the archlinux iso mounted with -drive if=virtio
-mount -t devtmpfs       none dev
-mount -t iso9660  -o ro dev/vda1 archiso
+mount -t iso9660  -o ro /dev/vda1 archiso
 mount -t squashfs -o ro,loop archiso/arch/x86_64/airootfs.sfs sqfs
 mount -t ext4     -o ro,loop sqfs/airootfs.img arch
-# Install new root filesystem using archiso
-mountbase /arch && mount -o bind /target mnt
-#cp /init-arch run/ && chroot . run/init-arch mnt
-#chroot . bash -i <dev/console >dev/console 2>&1 # DEBUG
-umount mnt && umountbase /arch && cd /
-# Unmount arch iso and devtmpfs (losetup -d due to bug in busybox umount)
-umount arch && losetup -d dev/loop1
-umount sqfs && losetup -d dev/loop0
-umount archiso /dev
+# Make some dirs available for the install image, remember unmounts in reverse
+mount -o bind / arch/mnt
+unmounts=arch/mnt
+for dir in proc sys dev dev/pts dev/shm run; do
+    mkdir -p $dir && mount -o bind /$dir arch/$dir
+    unmounts="arch/$dir $unmounts"
+done
 
-# In case the kernel is different...
-#[ -d /target/lib/modules/`uname -r` ] || \
-#    cp -r /lib/modules/`uname -r` /target/lib/modules/
+#cp /init-arch run/ &&
+chroot arch mnt/init-arch mnt
+# Done, unmount /dev and such under arch
+umount $unmounts
+# Unmount arch iso (losetup -d due to bug in busybox umount)
+umount arch # && losetup -d /dev/loop1
+umount sqfs #&& losetup -d /dev/loop0
+umount archiso
+# Finally get rid of temporary install dir
+cd .. && rm -rf install_tmp
 
 # Jump!
-mountbase /target
-mkdir old_root && pivot_root . old_root || exec sh
-exec chroot . sh -c 'umount old_root; rmdir old_root; exec /sbin/init' \
-  <dev/console >dev/console 2>&1
+exec /sbin/init || exec sh
