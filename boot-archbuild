@@ -1,0 +1,23 @@
+#!/bin/bash
+# Directories where initrd.gz and bzImage are located
+basedir=.
+: ${SSHPORT=2222}
+args=(
+    -machine pc,accel=kvm
+    -kernel $basedir/bzImage -initrd $basedir/initrd.gz
+    -serial stdio
+    -append "loglevel=8 console=ttyS0,115200n8 init=/bin/sh"
+    #-append 'loglevel=8 console=ttyS0,115200n8 console=tty0'
+    -serial file:$basedir/serial.txt
+
+    -drive media=cdrom,if=virtio,file=/media/iso/archlinux-2014.10.01-dual.iso
+
+    -net user,hostfwd=tcp:0:$SSHPORT-:22
+    -net nic,model=virtio
+
+    -device usb-ehci # -device usb-kbd
+    -vga std -cpu host
+    -m 4G -smp 4
+    # -vnc :0
+)
+qemu-system-x86_64 "${args[@]}" "$@"

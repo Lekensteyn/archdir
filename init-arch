@@ -1,0 +1,87 @@
+#!/bin/bash
+# Assume that / is an arch install.
+# Assume that $1 is destination with proc,sys,dev,dev/pts,run already mounted
+set -e -u
+umask 022
+MYUSER=arch
+
+mounts='/etc/resolv.conf /etc/localtime'
+# For mirrorlist and gnupg dir
+mounts+=' /etc/pacman.d'
+cleanup() {
+    #bash -i || :
+    pkill -F /run/haveged.pid || :
+    pkill -F /run/dhclient.pid || :
+    umount $mounts || :
+}
+# Ensure that no services are running when done
+trap cleanup EXIT
+#set -x # DEBUG
+
+cd $1
+# Create etc and other necessary skeleton
+mkdir -p etc/pacman.d
+
+# Start services for hwrng and networking
+haveged -p /run/haveged.pid -w 1024
+# dhclient-script writes /etc/resolv.conf
+sed "s,/etc/resolv\.conf,.&,g" /usr/bin/dhclient-script > /run/dhclient-script
+chmod 755 /run/dhclient-script
+touch etc/resolv.conf
+dhclient -sf /run/dhclient-script -pf /run/dhclient.pid eth0
+
+# Time
+ln -sf /usr/share/zoneinfo/Europe/Amsterdam etc/localtime
+
+# Networking.
+echo builder > etc/hostname
+#ip link set eth0 up
+#ip addr add 10.0.2.15/24 dev eth0
+#ip route add default via 10.0.2.1
+#echo > etc/resolv.conf nameserver 10.0.2.3
+
+# Pacman
+echo > etc/pacman.d/mirrorlist \
+    "Server = http://10.0.2.2:8001/\$repo/os/\$arch"
+sed -r /etc/pacman.conf > etc/pacman.conf \
+    -e "s/^#(Color|TotalDownload)/\1/"
+
+for file in $mounts; do
+    mount --bind .$file $file
+done
+
+# Avoid warnings when package signatures are outdated
+pacman-key --gpgdir etc/pacman.d/gnupg --init &&
+pacman-key --gpgdir etc/pacman.d/gnupg --populate archlinux &&
+pacman-key --gpgdir etc/pacman.d/gnupg --refresh-keys || :
+
+# Base installation (-M avoid mirrorlist copy -G avoid gpg copy)
+pacstrap -C etc/pacman.conf -M . base base-devel
+# Restore files
+for file in etc/resolv.conf etc/pacman.{conf,d/mirrorlist}; do
+    [ ! -e $file.pacnew ] || mv -f $file.pacnew $file
+done
+
+# SSH (disable by default since its dependencies may affect packages)
+if false; then
+    cat >> etc/ssh/sshd_config <<EOF
+UseDNS no
+PasswordAuthentication no
+AllowUsers root $MYUSER
+EOF
+    for svc in sshdgenkeys.service sshd.service; do
+        ln -sv /usr/lib/systemd/system/$svc \
+            etc/systemd/system/multi-user.target.wants
+    done
+fi
+
+# Personalization
+echo HISTCONTROL=ignoredups:ignorespace >> etc/skel/.bashrc
+echo -e 'syntax on\nset number bg=dark smartindent hlsearch' > etc/skel/.vimrc
+wget -O etc/skel/.screenrc https://lekensteyn.nl/files/screenrc
+mkdir -p etc/skel/.ssh
+wget -O etc/skel/.ssh/authorized_keys https://lekensteyn.nl/sshkeys.txt
+cp -r etc/skel/ root/
+useradd -R $PWD -m -G wheel -s /bin/bash $MYUSER
+
+rm -rf var/cache/pacman/pkg
