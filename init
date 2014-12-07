@@ -1,13 +1,7 @@
 #!/bin/busybox sh
 # Requires: mount, mkdir, umount, losetup, chroot, pivot_root, uname
 set -e -u
-
-# Init env
 umask 22
-set -x # DEBUG
-#export PATH=/usr/bin:/usr/sbin:/bin:/sbin
-#/bin/busybox mkdir -p /usr/bin /usr/sbin /bin /sbin
-#/bin/busybox --install -s
 
 mods='atkbd virtio_ring virtio virtio_net virtio_pci virtio_blk'
 mods="$mods isofs loop squashfs ext4"
@@ -21,38 +15,40 @@ mount -t proc       none proc
 mount -t sysfs      none sys
 mount -t devtmpfs   none dev
 mkdir -p dev/pts dev/shm
-mount -t tmpfs      none dev/shm
 mount -t devpts     devpts dev/pts
+mount -t tmpfs      none dev/shm
 # http://www.freedesktop.org/wiki/Software/systemd/InitrdInterface/
 mount -t tmpfs -o nosuid,nodev,mode=755 none run
+mountpoints='proc sys dev dev/pts dev/shm run'
 
 # Increase rootfs size (needs procfs)
-mount -o remount,size=80% /
+mkdir target && mount -t tmpfs -o size=80% none target
 
-mkdir install_tmp && cd install_tmp # Now in separate dir
+# Mount arch iso
 mkdir -p archiso sqfs arch
 # vda1 is the archlinux iso mounted with -drive if=virtio
 mount -t iso9660  -o ro /dev/vda1 archiso
 mount -t squashfs -o ro,loop archiso/arch/x86_64/airootfs.sfs sqfs
 mount -t ext4     -o ro,loop sqfs/airootfs.img arch
 # Make some dirs available for the install image, remember unmounts in reverse
-mount -o bind / arch/mnt
+mount -o bind /target arch/mnt
 unmounts=arch/mnt
-for dir in proc sys dev dev/pts dev/shm run; do
-    mkdir -p $dir && mount -o bind /$dir arch/$dir
+for dir in $mountpoints; do
+    mkdir -p arch/$dir && mount -o bind /$dir arch/$dir
     unmounts="arch/$dir $unmounts"
 done
 
-#cp /init-arch run/ &&
-chroot arch mnt/init-arch mnt
-# Done, unmount /dev and such under arch
-umount $unmounts
-# Unmount arch iso (losetup -d due to bug in busybox umount)
-umount arch # && losetup -d /dev/loop1
-umount sqfs #&& losetup -d /dev/loop0
-umount archiso
-# Finally get rid of temporary install dir
-cd .. && rm -rf install_tmp
+# Kick off the installation
+cp /init-arch run/ && chroot arch run/init-arch mnt && rm run/init-arch
+
+# Unmount mounts under arch/, and unmount arch iso
+umount $unmounts arch sqfs archiso
+
+# Move original mountpoints to the target
+for dir in $mountpoints; do
+    [ -d /$dir ] || continue # dev/pts is gone!
+    mkdir -p target/$dir && mount -o move /$dir target/$dir
+done
 
 # Jump!
-exec /sbin/init || exec sh
+exec switch_root /target /sbin/init
