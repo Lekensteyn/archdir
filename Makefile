@@ -38,7 +38,15 @@ $(idir)/lib/modules/$(KVER): \
 	$(ARCHROOT)/lib/modules/$(KVER)/kernel \
 	$(wildcard $(ARCHROOT)/lib/modules/$(KVER)/modules.*)
 	mkdir -p $@
-	cp -ra $^ $@
+	rsync -ra $^ $@ --include=gpu/drm/ $$(printf ' --include=fs/%s\*\*\*' \
+		fs/{9p,ext4,fscache,isofs,jbd2,squashfs}/ fs/mbcache.ko \
+		gpu/drm/{drm_kms_helper,drm}.ko gpu/drm/ttm/ \
+		scsi/{scsi,sr}_mod.ko \
+		net/{9p/,sched/,virtio_net.ko} \
+	) $$(printf ' --exclude=%s' \
+		sound/ media/ staging/ wireless/ ethernet/ usb/ \
+		infinibind/ isdn/ hwmon/ netfilter/ md/ \
+		{fs,gpu,scsi,net}/\*\*)
 
 FILES = init bin/busybox bin/sh
 FILES += lib/modules/$(KVER)
