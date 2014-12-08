@@ -19,7 +19,7 @@ cd /shared || exit 1
 if [ -e PKGBUILD ]; then
     # Hide stdout to avoid clogging journald. Use tail -F build.log instead
     script -f -e -c \
-        'time makepkg -s --noconfirm --noprogressbar' \
+        'time makepkg -s --noconfirm' \
         build.log >/dev/null
     rc=$?
     pacman -Q > package-versions.txt
