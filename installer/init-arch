@@ -80,13 +80,20 @@ EOF
 fi
 
 # Personalization
-echo HISTCONTROL=ignoredups:ignorespace >> etc/skel/.bashrc
-echo -e 'syntax on\nset number bg=dark smartindent hlsearch' > etc/skel/.vimrc
-wget -O etc/skel/.screenrc https://lekensteyn.nl/files/screenrc
-mkdir -p etc/skel/.ssh
-wget -O etc/skel/.ssh/authorized_keys https://lekensteyn.nl/sshkeys.txt
-cp -r etc/skel/. root/
-useradd -R $PWD -m -G wheel -s /bin/bash $MYUSER
+useradd -R $PWD -m -G wheel -s /bin/bash -p '' $MYUSER
+wrfile() {
+    tee='tee'; if [[ $1 == -a ]]; then tee='tee -a'; shift; fi
+    if [[ $1 == */* ]]; then
+        mkdir -p {root,home/$MYUSER/}/$(dirname "$1")
+        chown --reference=home home/$MYUSER/$(dirname "$1")
+    fi
+    $tee {root,home/$MYUSER/}/$1 >/dev/null
+    chown --reference=home/$MYUSER home/$MYUSER/$1
+}
+echo HISTCONTROL=ignoredups:ignorespace | wrfile -a .bashrc
+echo -e 'syntax on\nset number bg=dark smartindent hlsearch' | wrfile .vimrc
+wget -O - https://lekensteyn.nl/files/screenrc | wrfile .screenrc
+wget -O - https://lekensteyn.nl/sshkeys.txt | wrfile .ssh/authorized_keys
 
 rm -rf var/cache/pacman/pkg
 
