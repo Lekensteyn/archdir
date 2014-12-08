@@ -3,6 +3,7 @@
 # Assume that $1 is destination with proc,sys,dev,dev/pts,run already mounted
 set -e -u
 umask 022
+selfdir=$(dirname "$(readlink -f "$0")")
 MYUSER=arch
 
 mounts='/etc/resolv.conf /etc/localtime'
@@ -88,3 +89,28 @@ cp -r etc/skel/. root/
 useradd -R $PWD -m -G wheel -s /bin/bash $MYUSER
 
 rm -rf var/cache/pacman/pkg
+
+# Kick the builder
+install $selfdir/build.sh home/$MYUSER/
+chown --reference=home/$MYUSER home/$MYUSER/build.sh
+cat > etc/systemd/system/shared.mount <<EOF
+[Unit]
+Description=Shared folder using 9p
+
+[Mount]
+What=shared
+Where=/shared
+Type=9p
+EOF
+
+cat > etc/systemd/system/builder.service <<EOF
+[Unit]
+Description=Invoke script from builder
+Requires=shared.mount
+
+[Service]
+Type=oneshot
+User=$MYUSER
+ExecStart=/home/$MYUSER/build.sh
+EOF
+ln -s ../builder.service etc/systemd/system/multi-user.target.wants/
