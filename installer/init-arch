@@ -5,6 +5,9 @@ set -e -u
 umask 022
 selfdir=$(dirname "$(readlink -f "$0")")
 MYUSER=arch
+repos='core extra community'
+repos+=' testing community-testing'
+#repos+=' multilib multilib-testing'
 
 mounts='/etc/resolv.conf /etc/localtime'
 # For mirrorlist and gnupg dir
@@ -47,7 +50,9 @@ echo builder > etc/hostname
 # Pacman
 echo > etc/pacman.d/mirrorlist \
     "Server = http://10.0.2.2:8001/\$repo/os/\$arch"
+# the magic $repos expression uncomments some repos (if not enabled)
 sed -r /etc/pacman.conf > etc/pacman.conf \
+    -e "/^#\[(${repos// /|})\]/{:s;s/^#//;n;/^#[A-Z]/bs}" \
     -e "s/^#(Color|TotalDownload)/\1/"
 
 for file in $mounts; do
@@ -60,7 +65,7 @@ pacman-key --gpgdir etc/pacman.d/gnupg --populate archlinux
 #pacman-key --gpgdir etc/pacman.d/gnupg --refresh-keys || :
 
 # Base installation (-M avoid mirrorlist copy -G avoid gpg copy)
-pacstrap -C etc/pacman.conf -M . base base-devel
+pacstrap --noprogressbar -C etc/pacman.conf -M . base base-devel
 # Restore files
 for file in etc/resolv.conf etc/pacman.{conf,d/mirrorlist}; do
     [ ! -e $file.pacorig ] || mv -f $file.pacorig $file

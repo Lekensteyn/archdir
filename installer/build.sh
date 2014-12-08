@@ -22,12 +22,12 @@ if [ -e PKGBUILD ]; then
         'time makepkg -s --noconfirm --noprogressbar' \
         build.log >/dev/null
     rc=$?
+    pacman -Q > package-versions.txt
     ls -l *.tar.pkg.*
     [ $rc -eq 0 ] || error "makepkg returned exit code $rc"
     sudo shutdown -h now
 elif [ -f commands -a -x commands ]; then
     ./commands || error "command returned exit code $?"
 else
-    echo "Expecting PKGBUILD or an executable 'commands', found none!"
-    exit 1
+    error "Expecting PKGBUILD or an executable 'commands', found none!"
 fi
