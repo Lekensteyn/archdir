@@ -7,7 +7,7 @@ args=(
     -kernel $basedir/bzImage -initrd $basedir/initrd.gz
     -serial stdio
     -append 'vga=792 quiet console=tty0 console=ttyS0,115200n8'
-    -serial file:$basedir/serial.txt
+    #-serial file:$basedir/serial.txt
 
     -drive media=cdrom,if=virtio,file=/media/iso/archlinux-2014.10.01-dual.iso
 
@@ -16,7 +16,7 @@ args=(
 
     -device usb-ehci # -device usb-kbd
     -vga std -cpu host
-    -m 4G -smp 4
+    -m 4G -smp $(($(nproc)-1))
     # -vnc :0
 )
 
