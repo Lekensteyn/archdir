@@ -65,9 +65,15 @@ pacstrap -C etc/pacman.conf -M . base base-devel
 for file in etc/resolv.conf etc/pacman.{conf,d/mirrorlist}; do
     [ ! -e $file.pacorig ] || mv -f $file.pacorig $file
 done
+pacman() {
+    command pacman -r . --config etc/pacman.conf \
+        --cachedir=var/cache/pacman/pkg \
+        --noconfirm "$@"
+}
 
 # SSH (disable by default since its dependencies may affect packages)
-if false; then
+if true; then
+    pacman -S openssh
     cat >> etc/ssh/sshd_config <<EOF
 UseDNS no
 PasswordAuthentication no
@@ -77,6 +83,7 @@ EOF
         ln -sv /usr/lib/systemd/system/$svc \
             etc/systemd/system/multi-user.target.wants
     done
+    #pacman -S bash-completion htop screen vim
 fi
 
 echo '%wheel ALL=(ALL) NOPASSWD: ALL' >> etc/sudoers
