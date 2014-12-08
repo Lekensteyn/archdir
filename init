@@ -39,7 +39,7 @@ for dir in $mountpoints; do
 done
 
 # Kick off the installation
-cp /init-arch run/ && chroot arch run/init-arch mnt && rm run/init-arch
+mv installer arch/run/ins && chroot arch run/ins/init-arch mnt && rm -r run/ins
 
 # Unmount mounts under arch/, and unmount arch iso
 umount $unmounts arch sqfs archiso

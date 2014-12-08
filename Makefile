@@ -7,6 +7,8 @@ idir    ?= $(destdir)/ird
 all: $(destdir)/initrd.gz $(destdir)/bzImage
 $(idir)/%: %
 	install -Dm755 $< $@
+$(idir)/installer: installer $(wildcard installer/*)
+	rsync -r $< $@
 
 $(idir)/bin/sh:
 	ln -s busybox $@
@@ -38,8 +40,9 @@ $(idir)/lib/modules/$(KVER): \
 	mkdir -p $@
 	cp -r $^ $@
 
-FILES = init init-arch bin/busybox bin/sh
+FILES = init bin/busybox bin/sh
 FILES += lib/modules/$(KVER)
+FILES += installer
 
 $(destdir)/initrd.gz: $(addprefix $(idir)/,$(FILES))
 	(cd $(idir) && find . | cpio --owner=root:root -H newc -o) | gzip -9 > $@.new
