@@ -1,13 +1,9 @@
 #!/bin/busybox sh
 # Requires: mount, mkdir, umount, losetup, chroot, pivot_root, uname
-set -e -u
-umask 22
-
+umask 022; set -e -u
 mods='atkbd virtio_ring virtio virtio_net virtio_pci virtio_blk'
 mods="$mods isofs loop squashfs ext4"
-for mod in $mods; do
-    modprobe -v $mod || :
-done
+for mod in $mods; do modprobe -v $mod || :; done
 
 # Mount base filesystems
 mkdir -p proc sys dev run
@@ -43,6 +39,10 @@ mv installer arch/run/ins && chroot arch run/ins/init-arch mnt && rm -r run/ins
 
 # Unmount mounts under arch/, and unmount arch iso
 umount $unmounts arch sqfs archiso
+
+# In case the kernel is different...
+[ -d /target/lib/modules/`uname -r` ] || \
+    cp -r /lib/modules/`uname -r` /target/lib/modules/
 
 # Move original mountpoints to the target
 for dir in $mountpoints; do

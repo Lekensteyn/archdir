@@ -8,7 +8,7 @@ all: $(destdir)/initrd.gz $(destdir)/bzImage
 $(idir)/%: %
 	install -Dm755 $< $@
 $(idir)/installer: installer $(wildcard installer/*)
-	rsync -r $< $@
+	rsync -ra $</ $@/
 
 $(idir)/bin/sh:
 	ln -s busybox $@
@@ -33,12 +33,12 @@ KIMAGE = /boot/vmlinuz-$(KVER)
 endif
 
 $(destdir)/bzImage: $(KIMAGE)
-	cp -v $< $@
+	cp -va $< $@
 $(idir)/lib/modules/$(KVER): \
 	$(ARCHROOT)/lib/modules/$(KVER)/kernel \
-	$(ARCHROOT)/lib/modules/$(KVER)/modules.dep
+	$(wildcard $(ARCHROOT)/lib/modules/$(KVER)/modules.*)
 	mkdir -p $@
-	cp -r $^ $@
+	cp -ra $^ $@
 
 FILES = init bin/busybox bin/sh
 FILES += lib/modules/$(KVER)
