@@ -49,7 +49,7 @@ $(destdir)/initrd.gz: $(addprefix $(idir)/,$(FILES))
 	mv $@.new $@
 
 run: boot-archbuild all
-	./boot-archbuild -vnc :0
+	./boot-archbuild share -vnc :0
 
 .PHONY: clean
 clean:

@@ -1,7 +1,7 @@
 #!/bin/busybox sh
 # Requires: mount, mkdir, umount, losetup, chroot, pivot_root, uname
 umask 022; set -e -u
-mods='atkbd virtio_ring virtio virtio_net virtio_pci virtio_blk'
+mods='atkbd virtio_ring virtio virtio_net virtio_pci virtio_blk 9pnet_virtio'
 mods="$mods isofs loop squashfs ext4"
 for mod in $mods; do modprobe -v $mod || :; done
 

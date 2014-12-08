@@ -6,8 +6,7 @@ args=(
     -machine pc,accel=kvm
     -kernel $basedir/bzImage -initrd $basedir/initrd.gz
     -serial stdio
-    -append "loglevel=8 console=ttyS0,115200n8 init=/bin/sh"
-    #-append 'loglevel=8 console=ttyS0,115200n8 console=tty0'
+    -append 'vga=792 quiet console=tty0 console=ttyS0,115200n8'
     -serial file:$basedir/serial.txt
 
     -drive media=cdrom,if=virtio,file=/media/iso/archlinux-2014.10.01-dual.iso
@@ -20,4 +19,20 @@ args=(
     -m 4G -smp 4
     # -vnc :0
 )
+
+if [ $# -gt 0 ] && [[ $1 != -* ]]; then
+    if [ ! -d "$1" ]; then
+        echo "$1: is not a directory that can be exported via virtfs!"
+        exit 1
+    fi
+    # use security_model=mapped-file to create a .virtfs-metadata/ dir in $1.
+    # passthrough checks the owner against the accessing user (root cannot
+    # create files as the owner of the file cannot be set to root). Therefore
+    # use 'none' which silently ignores such errors.
+    args+=(
+        -virtfs local,mount_tag=shared,security_model=none,path=$1
+    )
+    shift
+fi
+
 qemu-system-x86_64 "${args[@]}" "$@"
