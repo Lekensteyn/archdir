@@ -8,7 +8,7 @@ all: $(destdir)/initrd.gz $(destdir)/bzImage
 $(idir)/%: %
 	install -Dm755 $< $@
 $(idir)/installer: installer $(wildcard installer/*)
-	rsync -ra $</ $@/
+	rsync -ra --exclude='.*.sw?' $</ $@/
 
 $(idir)/bin/sh:
 	ln -s busybox $@
