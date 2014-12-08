@@ -68,11 +68,11 @@ done
 pacman() {
     command pacman -r . --config etc/pacman.conf \
         --cachedir=var/cache/pacman/pkg \
-        --noconfirm "$@"
+        --noconfirm --noprogressbar "$@"
 }
 
 # SSH (disable by default since its dependencies may affect packages)
-if true; then
+if false; then
     pacman -S openssh
     cat >> etc/ssh/sshd_config <<EOF
 UseDNS no

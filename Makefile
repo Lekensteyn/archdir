@@ -51,6 +51,6 @@ $(destdir)/initrd.gz: $(addprefix $(idir)/,$(FILES))
 run: boot-archbuild all
 	./boot-archbuild share -vnc :0
 
-.PHONY: clean
+.PHONY: clean run
 clean:
 	rm -vf $(destdir)/bzImage $(destdir)/initrd.gz
