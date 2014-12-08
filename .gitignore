@@ -1,0 +1,6 @@
+.*.sw?
+bzImage
+initrd.gz
+initrd.gz.new
+ird/
+serial.txt
