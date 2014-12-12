@@ -23,7 +23,7 @@ if [ -e PKGBUILD ]; then
         build.log >/dev/null
     rc=$?
     pacman -Q > package-versions.txt
-    ls -l *.tar.pkg.*
+    ls -l *.pkg.tar.*
     [ $rc -eq 0 ] || error "makepkg returned exit code $rc"
     sudo shutdown -h now
 elif [ -f commands -a -x commands ]; then
