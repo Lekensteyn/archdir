@@ -16,7 +16,9 @@ error() {
 }
 
 cd /shared || exit 1
-if [ -e PKGBUILD ]; then
+if [ -f commands -a -x commands ]; then
+    ./commands || error "command returned exit code $?"
+elif [ -e PKGBUILD ]; then
     # Hide stdout to avoid clogging journald. Use tail -F build.log instead
     script -f -e -c \
         'time makepkg -s --noconfirm' \
@@ -25,9 +27,7 @@ if [ -e PKGBUILD ]; then
     pacman -Q > package-versions.txt
     ls -l *.pkg.tar.*
     [ $rc -eq 0 ] || error "makepkg returned exit code $rc"
-    sudo shutdown -h now
-elif [ -f commands -a -x commands ]; then
-    ./commands || error "command returned exit code $?"
+    [ -e .noshutdown ] || sudo shutdown -h now
 else
     error "Expecting PKGBUILD or an executable 'commands', found none!"
 fi
