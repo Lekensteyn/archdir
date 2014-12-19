@@ -1,6 +1,6 @@
 #!/bin/bash
 # Directories where initrd.gz and bzImage are located
-basedir=.
+basedir=$(dirname "$(readlink -f "$0")")
 : ${SSHPORT=2222}
 args=(
     -machine pc,accel=kvm
