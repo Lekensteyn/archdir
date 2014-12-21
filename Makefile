@@ -11,7 +11,7 @@ $(idir)/installer: installer $(wildcard installer/*)
 	rsync -ra --exclude='.*.sw?' $</ $@/
 
 $(idir)/bin/sh:
-	ln -s busybox $@
+	ln -sf busybox $@
 
 $(idir)/bin/busybox: /bin/busybox
 	install -Dm755 $< $@
