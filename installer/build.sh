@@ -1,4 +1,7 @@
 #!/bin/bash
+# Load env vars to ensure that pod2man is available in $PATH
+. /etc/profile
+
 [ -e ~/.makepkg.conf ] || cat > ~/.makepkg.conf <<'EOF'
 PACKAGER="Peter Wu <peter@lekensteyn.nl>"
 MAKEFLAGS="-j$(nproc)"
