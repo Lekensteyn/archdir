@@ -22,6 +22,7 @@ cd /shared || exit 1
 if [ -f commands -a -x commands ]; then
     ./commands || error "command returned exit code $?"
 elif [ -e PKGBUILD ]; then
+    sudo pacman-db-upgrade # Installed using pacman 4.1.2, runs 4.2
     if [ -f buildrc ]; then
         # can be used to load additional environment variables or more generally
         # invoke commands before running makepkg.
