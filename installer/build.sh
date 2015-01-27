@@ -19,7 +19,6 @@ cd /shared || exit 1
 if [ -f commands -a -x commands ]; then
     ./commands || error "command returned exit code $?"
 elif [ -e PKGBUILD ]; then
-    sudo pacman-db-upgrade # Installed using pacman 4.1.2, runs 4.2
     # Hide stdout to avoid clogging journald. Use tail -F build.log instead
     script -f -e -c \
         'time makepkg -s --noconfirm' \

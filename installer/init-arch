@@ -70,6 +70,8 @@ pacstrap -C etc/pacman.conf -M . base base-devel
 for file in etc/resolv.conf etc/pacman.{conf,d/mirrorlist}; do
     [ ! -e $file.pacorig ] || mv -f $file.pacorig $file
 done
+# Upgrade pacman db when installation image is older
+usr/bin/pacman-db-upgrade -r .
 pacman() {
     command pacman -r . --config etc/pacman.conf \
         --cachedir=var/cache/pacman/pkg \
