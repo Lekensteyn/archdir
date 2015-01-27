@@ -19,6 +19,11 @@ cd /shared || exit 1
 if [ -f commands -a -x commands ]; then
     ./commands || error "command returned exit code $?"
 elif [ -e PKGBUILD ]; then
+    if [ -f buildrc ]; then
+        # can be used to load additional environment variables or more generally
+        # invoke commands before running makepkg.
+        . ./buildrc
+    fi
     # Hide stdout to avoid clogging journald. Use tail -F build.log instead
     script -f -e -c \
         'time makepkg -s --noconfirm' \
