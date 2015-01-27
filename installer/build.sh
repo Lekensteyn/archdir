@@ -6,8 +6,8 @@
 PACKAGER="Peter Wu <peter@lekensteyn.nl>"
 MAKEFLAGS="-j$(nproc)"
 # See also http://stackoverflow.com/a/27076307/427545
-  DEBUG_CFLAGS+=" -ggdb -fno-omit-frame-pointer"
-DEBUG_CXXFLAGS+=" -ggdb -fno-omit-frame-pointer"
+  DEBUG_CFLAGS+=" -ggdb"
+DEBUG_CXXFLAGS+=" -ggdb"
 OPTIONS+=(debug)
 EOF
 
