@@ -25,7 +25,7 @@ elif [ -e PKGBUILD ]; then
     if [ -f buildrc ]; then
         # can be used to load additional environment variables or more generally
         # invoke commands before running makepkg.
-        . ./buildrc
+        . ./buildrc || error "buildrc returned exit code $?"
     fi
     # Hide stdout to avoid clogging journald. Use tail -F build.log instead
     script -f -e -c \
