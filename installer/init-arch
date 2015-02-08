@@ -94,7 +94,7 @@ fi
 echo '%wheel ALL=(ALL) NOPASSWD: ALL' >> etc/sudoers
 
 # Personalization
-useradd -R $PWD -m -G wheel -s /bin/bash -p '' $MYUSER
+chroot . useradd -m -G wheel -s /bin/bash -p '' $MYUSER
 wrfile() {
     tee='tee'; if [[ $1 == -a ]]; then tee='tee -a'; shift; fi
     if [[ $1 == */* ]]; then
