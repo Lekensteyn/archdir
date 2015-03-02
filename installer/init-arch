@@ -75,6 +75,7 @@ pacman() {
         --cachedir=var/cache/pacman/pkg \
         --noconfirm --noprogressbar "$@"
 }
+mkdir etc/systemd/system/multi-user.target.wants
 
 # SSH (disable by default since its dependencies may affect packages)
 if false; then
