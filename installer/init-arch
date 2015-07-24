@@ -48,8 +48,11 @@ echo builder > etc/hostname
 #echo > etc/resolv.conf nameserver 10.0.2.3
 
 # Pacman (first try local mirror)
+mirror=http://10.0.2.2:8001
+wget -q -t1 -T3 --spider $mirror/core/os/x86_64/core.d || mirror=
+echo "Local pacman packages mirror: ${mirror:-(none)}"
 printf 'Server = %s/$repo/os/$arch\n' > etc/pacman.d/mirrorlist \
-    http://10.0.2.2:8001 \
+    $mirror \
     http://ftp.nluug.nl/os/Linux/distr/archlinux/ \
     http://mirror.nl.leaseweb.net/archlinux \
     http://arch.apt-get.eu
