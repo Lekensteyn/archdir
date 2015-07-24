@@ -107,6 +107,8 @@ fi
 echo '%wheel ALL=(ALL) NOPASSWD: ALL' >> etc/sudoers
 
 # Personalization
+awk -F: "\$3 == $MYGID { found = 1 } END { exit(!found) }" etc/group ||
+chroot . groupadd -g $MYGID $MYUSER
 chroot . useradd -m -u $MYUID -g $MYGID -G wheel -s /bin/bash -p '' $MYUSER
 wrfile() {
     tee='tee'; if [[ $1 == -a ]]; then tee='tee -a'; shift; fi
