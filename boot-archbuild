@@ -4,12 +4,12 @@ basedir=$(dirname "$(readlink -f "$0")")
 : ${SSHPORT=2222}
 args=(
     -machine pc,accel=kvm
-    -kernel $basedir/bzImage -initrd $basedir/initrd.gz
+    -kernel "$basedir/bzImage" -initrd "$basedir/initrd.gz"
     -serial stdio
     -append 'vga=792 quiet console=tty0 console=ttyS0,115200n8'
     #-serial file:$basedir/serial.txt
 
-    -drive media=cdrom,if=virtio,file=/media/iso/archlinux-2014.10.01-dual.iso
+    -drive media=cdrom,if=virtio,file="$basedir/archlinux.iso"
 
     -net user,hostfwd=tcp:0:$SSHPORT-:22
     -net nic,model=virtio
@@ -30,7 +30,7 @@ if [ $# -gt 0 ] && [[ $1 != -* ]]; then
     # create files as the owner of the file cannot be set to root). Therefore
     # use 'none' which silently ignores such errors.
     args+=(
-        -virtfs local,mount_tag=shared,security_model=none,path=$1
+        -virtfs local,mount_tag=shared,security_model=none,path="$1"
     )
     shift
 fi
