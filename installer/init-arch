@@ -19,6 +19,8 @@ cleanup() {
         rm -f $pidfile
     done
     rm -f /run/dhclient-script
+    # Kill pacman's gpg agent.
+    killall gpg-agent
     umount $mounts || :
 }
 # Ensure that no services are running when done
