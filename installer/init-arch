@@ -47,9 +47,12 @@ echo builder > etc/hostname
 #ip route add default via 10.0.2.1
 #echo > etc/resolv.conf nameserver 10.0.2.3
 
-# Pacman
-echo > etc/pacman.d/mirrorlist \
-    "Server = http://10.0.2.2:8001/\$repo/os/\$arch"
+# Pacman (first try local mirror)
+printf 'Server = %s/$repo/os/$arch\n' > etc/pacman.d/mirrorlist \
+    http://10.0.2.2:8001 \
+    http://ftp.nluug.nl/os/Linux/distr/archlinux/ \
+    http://mirror.nl.leaseweb.net/archlinux \
+    http://arch.apt-get.eu
 # the magic $repos expression uncomments some repos (if not enabled)
 sed -r /etc/pacman.conf > etc/pacman.conf \
     -e "/^#\[(${repos// /|})\]/{:s;s/^#//;n;/^#[A-Z]/bs}" \
