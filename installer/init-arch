@@ -6,8 +6,8 @@ umask 022
 
 
 selfdir=$(dirname "$(readlink -f "$0")")
-MYUID=$(grep -m1 -Po '\bapp\.uid=\K1\d+' $1/proc/cmdline || echo 1000)
-MYGID=$(grep -m1 -Po '\bapp\.gid=\K1\d+' $1/proc/cmdline || echo 1000)
+MYUID=$(grep -m1 -Po '\bapp\.uid=\K1\d+' /proc/cmdline || echo 1000)
+MYGID=$(grep -m1 -Po '\bapp\.gid=\K1\d+' /proc/cmdline || echo 1000)
 MYUSER=arch
 repos='core extra community'
 repos+=' testing community-testing'
