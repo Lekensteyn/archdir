@@ -1,8 +1,7 @@
 
 # Source directory (containing /boot and /lib/modules),
-# use an empty directory to use the current kernel version,
-# use / to use the latest Arch kernel version.
-ARCHROOT ?=
+# do not set ARCHROOT use the current kernel version,
+# use an empty string for the latest kernel version in the current root.
 ifdef ARCHROOT
 KVER = $(notdir $(lastword $(sort $(wildcard $(ARCHROOT)/lib/modules/[0-9]*.*-ARCH))))
 else
