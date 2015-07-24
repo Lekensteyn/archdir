@@ -9,7 +9,7 @@ KVER = $(shell uname -r)
 endif
 
 # Path to static busybox. Must provide at least modprobe.
-BUSYBOX ?= $(lastword (wildcard /bin/busybox $(ARCHROOT)/bin/busybox))
+BUSYBOX ?= $(lastword $(wildcard /bin/busybox $(ARCHROOT)/bin/busybox))
 
 # Output directory for initrd.gz and bzImage
 destdir ?= .
