@@ -2,6 +2,8 @@
 # Directories where initrd.gz and bzImage are located
 basedir=$(dirname "$(readlink -f "$0")")
 : ${SSHPORT=2222}
+: ${MEM:=4G}
+: ${CPUS:=$(($(nproc)-1))}
 
 cmdline='vga=792 quiet console=tty0 console=ttyS0,115200n8'
 
@@ -18,7 +20,7 @@ args=(
 
     -device usb-ehci # -device usb-kbd
     -vga std -cpu host
-    -m 4G -smp $(($(nproc)-1))
+    -m $MEM -smp $CPUS
     # -vnc :0
 )
 
