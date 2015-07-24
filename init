@@ -3,7 +3,7 @@
 umask 022; set -e -u
 mods='atkbd virtio_ring virtio virtio_net virtio_pci virtio_blk 9pnet_virtio'
 mods="$mods isofs loop squashfs ext4"
-for mod in $mods; do modprobe -v $mod || :; done
+for mod in $mods; do busybox modprobe -v $mod || :; done
 
 # Mount base filesystems
 mkdir -p proc sys dev run
