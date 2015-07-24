@@ -54,7 +54,8 @@ $(idir)/lib/modules/$(KVER): \
 	$(ARCHROOT)/lib/modules/$(KVER)/kernel \
 	$(wildcard $(ARCHROOT)/lib/modules/$(KVER)/modules.*)
 	mkdir -p $@
-	rsync -ra $^ $@ --include=gpu/drm/ $$(printf ' --include=%s\*\*\*' \
+	rsync -ra $^ $@ --include=gpu/drm/ \
+		$$(printf ' --include=%s***' \
 		fs/{9p,ext4,fscache,isofs,jbd2,squashfs}/ fs/mbcache.ko \
 		gpu/drm/{drm_kms_helper,drm}.ko gpu/drm/ttm/ \
 		scsi/{scsi,sr}_mod.ko \
