@@ -1,9 +1,9 @@
 #!/bin/busybox sh
-# Requires: mount, mkdir, umount, losetup, chroot, pivot_root, uname
+# Requires: mount, mkdir, umount, losetup, chroot, switch_root, uname
 umask 022; set -e -u
-mods='atkbd virtio_ring virtio virtio_net virtio_pci virtio_blk 9pnet_virtio'
-mods="$mods isofs loop squashfs ext4"
-for mod in $mods; do busybox modprobe -v $mod || :; done
+for i in mount modprobe; do
+    alias $i=busybox\ $i
+done
 
 # Mount base filesystems
 mkdir -p proc sys dev run
@@ -16,6 +16,11 @@ mount -t tmpfs      none dev/shm
 # http://www.freedesktop.org/wiki/Software/systemd/InitrdInterface/
 mount -t tmpfs -o nosuid,nodev,mode=755 none run
 mountpoints='proc sys dev dev/pts dev/shm run'
+
+# Load modules after /proc/modules becomes available.
+mods='atkbd virtio_ring virtio virtio_net virtio_pci virtio_blk 9pnet_virtio'
+mods="$mods isofs loop squashfs ext4"
+for mod in $mods; do modprobe -v $mod || :; done
 
 # Increase rootfs size (needs procfs)
 mkdir target && mount -t tmpfs -o size=80% none target
@@ -51,4 +56,4 @@ for dir in $mountpoints; do
 done
 
 # Jump!
-exec switch_root /target /sbin/init
+exec busybox switch_root /target /sbin/init
