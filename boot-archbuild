@@ -35,8 +35,7 @@ if [ $# -gt 0 ] && [[ $1 != -* ]]; then
         -virtfs local,mount_tag=shared,security_model=none,path="$1"
     )
     # Ensures writable mountpoint in the guest via a matching uid/gid mapping.
-    env=$(find "$1" -maxdepth 1 ! -uid 0 -writable -printf " app.uid=%U" -quit)
-    env+=$(find "$1" -maxdepth 1 ! -gid 0 -writable -printf " app.gid=%G" -quit)
+    env=" app.uid=$(id -u) app.gid=$(id -g)"
     cmdline+="$env"
     shift
 fi
