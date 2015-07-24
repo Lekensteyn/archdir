@@ -9,6 +9,9 @@ else
 KVER = $(shell uname -r)
 endif
 
+# Path to static busybox. Must provide at least modprobe.
+BUSYBOX ?= $(lastword (wildcard /bin/busybox $(ARCHROOT)/bin/busybox))
+
 # Output directory for initrd.gz and bzImage
 destdir ?= .
 # Initial ramdisk temp dir
@@ -33,7 +36,7 @@ $(idir)/installer: installer $(wildcard installer/*)
 $(idir)/bin/sh: $(idir)/bin/
 	ln -sf busybox $@
 
-$(idir)/bin/busybox: /bin/busybox
+$(idir)/bin/busybox: $(BUSYBOX)
 	install -Dm755 $< $@
 
 # Ignore sound
