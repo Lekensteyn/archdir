@@ -25,7 +25,7 @@ $(idir)/bin/busybox: /bin/busybox
 # ... grr too much work to filter useless ones
 ARCHROOT = /media/AArch
 ifdef ARCHROOT
-KVER = $(notdir $(lastword $(sort $(wildcard $(ARCHROOT)/lib/modules/[0-9]*.*))))
+KVER = $(notdir $(lastword $(sort $(wildcard $(ARCHROOT)/lib/modules/[0-9]*.*-ARCH))))
 KIMAGE = $(ARCHROOT)/boot/vmlinuz-linux
 else
 KVER = $(shell uname -r)
