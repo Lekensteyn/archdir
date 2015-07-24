@@ -1,16 +1,36 @@
 
+# Source directory (containing /boot and /lib/modules),
+# use an empty directory to use the current kernel version,
+# use / to use the latest Arch kernel version.
+ARCHROOT ?=
+ifdef ARCHROOT
+KVER = $(notdir $(lastword $(sort $(wildcard $(ARCHROOT)/lib/modules/[0-9]*.*-ARCH))))
+else
+KVER = $(shell uname -r)
+endif
+
 # Output directory for initrd.gz and bzImage
 destdir ?= .
 # Initial ramdisk temp dir
 idir    ?= $(destdir)/ird
 
-all: $(destdir)/initrd.gz $(destdir)/bzImage
+
+all: $(destdir) $(destdir)/initrd.gz $(destdir)/bzImage
+tree:
+	$(MAKE) destdir=$(destdir)/kernels/$(KVER) ARCHROOT=$(ARCHROOT) KVER=$(KVER)
+	ln -sfn $(KVER) $(destdir)/kernels/current
+	test -L $(destdir)/bzImage || ln -sfn kernels/current/bzImage $(destdir)/bzImage
+	test -L $(destdir)/initrd.gz || ln -sfn kernels/current/initrd.gz $(destdir)/initrd.gz
+$(destdir):
+	mkdir -p $@
 $(idir)/%: %
 	install -Dm755 $< $@
+$(idir)/%/:
+	install -dm755 $@
 $(idir)/installer: installer $(wildcard installer/*)
 	rsync -ra --exclude='.*.sw?' $</ $@/
 
-$(idir)/bin/sh:
+$(idir)/bin/sh: $(idir)/bin/
 	ln -sf busybox $@
 
 $(idir)/bin/busybox: /bin/busybox
@@ -23,15 +43,9 @@ $(idir)/bin/busybox: /bin/busybox
 #	isofs squashfs \
 #	drivers
 # ... grr too much work to filter useless ones
-ARCHROOT = /media/AArch
-ifdef ARCHROOT
-KVER = $(notdir $(lastword $(sort $(wildcard $(ARCHROOT)/lib/modules/[0-9]*.*-ARCH))))
-KIMAGE = $(ARCHROOT)/boot/vmlinuz-linux
-else
-KVER = $(shell uname -r)
-KIMAGE = /boot/vmlinuz-$(KVER)
-endif
-
+KIMAGE = $(lastword $(wildcard \
+	$(ARCHROOT)/boot/vmlinuz-linux \
+	$(ARCHROOT)/boot/vmlinuz-$(KVER)))
 $(destdir)/bzImage: $(KIMAGE)
 	cp -va $< $@
 $(idir)/lib/modules/$(KVER): \
@@ -59,6 +73,6 @@ $(destdir)/initrd.gz: $(addprefix $(idir)/,$(FILES))
 run: boot-archbuild all
 	./boot-archbuild share -vnc :0
 
-.PHONY: clean run
+.PHONY: clean run all tree
 clean:
 	rm -vf $(destdir)/bzImage $(destdir)/initrd.gz

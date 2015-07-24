@@ -3,5 +3,6 @@ bzImage
 initrd.gz
 initrd.gz.new
 ird/
+kernels/
 serial.txt
 archlinux.iso
