@@ -2,11 +2,13 @@
 # Directories where initrd.gz and bzImage are located
 basedir=$(dirname "$(readlink -f "$0")")
 : ${SSHPORT=2222}
+
+cmdline='vga=792 quiet console=tty0 console=ttyS0,115200n8'
+
 args=(
     -machine pc,accel=kvm
     -kernel "$basedir/bzImage" -initrd "$basedir/initrd.gz"
     -serial stdio
-    -append 'vga=792 quiet console=tty0 console=ttyS0,115200n8'
     #-serial file:$basedir/serial.txt
 
     -drive media=cdrom,if=virtio,file="$basedir/archlinux.iso"
@@ -32,7 +34,15 @@ if [ $# -gt 0 ] && [[ $1 != -* ]]; then
     args+=(
         -virtfs local,mount_tag=shared,security_model=none,path="$1"
     )
+    # Ensures writable mountpoint in the guest via a matching uid/gid mapping.
+    env=$(find "$1" -maxdepth 1 ! -uid 0 -writable -printf " app.uid=%U" -quit)
+    env+=$(find "$1" -maxdepth 1 ! -gid 0 -writable -printf " app.gid=%G" -quit)
+    cmdline+="$env"
     shift
 fi
+
+args+=(
+    -append "$cmdline"
+)
 
 qemu-system-x86_64 "${args[@]}" "$@"

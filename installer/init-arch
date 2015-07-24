@@ -3,7 +3,11 @@
 # Assume that $1 is destination with proc,sys,dev,dev/pts,run already mounted
 set -e -u
 umask 022
+
+
 selfdir=$(dirname "$(readlink -f "$0")")
+UID=$(grep -m1 -Po '\bapp\.uid=\K1\d+' $1/proc/cmdline || echo 1000)
+GID=$(grep -m1 -Po '\bapp\.gid=\K1\d+' $1/proc/cmdline || echo 1000)
 MYUSER=arch
 repos='core extra community'
 repos+=' testing community-testing'
@@ -103,7 +107,7 @@ fi
 echo '%wheel ALL=(ALL) NOPASSWD: ALL' >> etc/sudoers
 
 # Personalization
-chroot . useradd -m -G wheel -s /bin/bash -p '' $MYUSER
+chroot . useradd -m -u $UID -g $GID -G wheel -s /bin/bash -p '' $MYUSER
 wrfile() {
     tee='tee'; if [[ $1 == -a ]]; then tee='tee -a'; shift; fi
     if [[ $1 == */* ]]; then
