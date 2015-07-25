@@ -55,7 +55,7 @@ echo builder > etc/hostname
 
 # Pacman (first try local mirror)
 mirror=http://10.0.2.2:8001
-wget -q -t1 -T3 --spider $mirror/core/os/x86_64/core.d || mirror=
+wget -q -t1 -T3 --spider $mirror/core/os/x86_64/core.db || mirror=
 echo "Local pacman packages mirror: ${mirror:-(none)}"
 printf 'Server = %s/$repo/os/$arch\n' > etc/pacman.d/mirrorlist \
     $mirror \
