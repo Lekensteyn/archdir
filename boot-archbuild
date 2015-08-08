@@ -59,4 +59,7 @@ args+=(
     -append "$cmdline"
 )
 
+# Remap ^C to ^] for SIGINT
+stty intr '^]'
+trap 'stty sane' EXIT
 qemu-system-x86_64 "${args[@]}" "$@"
