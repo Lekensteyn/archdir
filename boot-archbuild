@@ -41,6 +41,16 @@ if [ $# -gt 0 ] && [[ $1 != -* ]]; then
     cmdline+="$env"
     shift
 fi
+if [ -n "$SPICE_PORT" ]; then
+    args+=(
+        # Disable standard VGA device, using QXL as primary instead.
+        -vga none -device qxl-vga,vgamem_mb=32
+        -spice port=${SPICE_PORT},disable-ticketing
+        -device virtio-serial
+        -chardev spicevmc,id=vdagent,name=vdagent
+        -device virtserialport,chardev=vdagent,name=com.redhat.spice.0
+    )
+fi
 
 # Append env $CMDLINE
 cmdline+="${CMDLINE:+ $CMDLINE}"
