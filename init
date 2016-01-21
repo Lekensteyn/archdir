@@ -30,7 +30,13 @@ mkdir -p archiso sqfs arch
 # vda1 is the archlinux iso mounted with -drive if=virtio
 mount -t iso9660  -o ro /dev/vda1 archiso
 mount -t squashfs -o ro,loop archiso/arch/x86_64/airootfs.sfs sqfs
-mount -t ext4     -o ro,loop sqfs/airootfs.img arch
+if [ -e sqfs/airootfs.img ]; then
+    # Before v23 sfs_mode=img
+    mount -t ext4 -o ro,loop sqfs/airootfs.img arch
+else
+    # Since v23 sfs_mode=sfs which uses overlayfs.
+    mount --bind sqfs arch
+fi
 # Make some dirs available for the install image, remember unmounts in reverse
 mount -o bind /target arch/mnt
 unmounts=arch/mnt
