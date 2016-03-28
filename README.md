@@ -19,7 +19,8 @@ You can setup an arch mirror at the host machine, port 8001 (see `init-arch`).
 Get the Arch Linux iso from https://www.archlinux.org/download/ and save it as
 `archlinux.iso` in this directory (or create a symlink, recommended).
 Additionally, make sure that the static busybox binary is installed at
-`/bin/busybox` (for other locations, explicitly set the `BUSYBOX` variable).
+`/bin/busybox` (for other locations, explicitly set the `BUSYBOX` variable) and
+that the `cpio` program is available.
 
 Prepare initrd and kernel, assuming that the host is running Arch Linux (using
 current kernel image and modules):

@@ -36,7 +36,7 @@ $(idir)/bin/sh: $(idir)/bin/
 	ln -sf busybox $@
 
 $(idir)/bin/busybox: $(BUSYBOX)
-	@[ -n "$<" ] || { echo "Static binary /bin/busybox is not found!"; exit 1; }
+	@[ -n "$<" ] || { echo "Static binary /bin/busybox is not found!" >&2; exit 1; }
 	install -Dm755 $< $@
 
 # Ignore sound
@@ -71,6 +71,7 @@ FILES += lib/modules/$(KVER)
 FILES += installer
 
 $(destdir)/initrd.gz: $(addprefix $(idir)/,$(FILES))
+	@cpio --version >/dev/null || { echo "Please install cpio!" >&2; exit 1; }
 	(cd $(idir) && find . | cpio --owner=root:root -H newc -o) | gzip -9 > $@.new
 	mv $@.new $@
 
