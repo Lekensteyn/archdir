@@ -36,6 +36,7 @@ $(idir)/bin/sh: $(idir)/bin/
 	ln -sf busybox $@
 
 $(idir)/bin/busybox: $(BUSYBOX)
+	@[ -n "$<" ] || { echo "Static binary /bin/busybox is not found!"; exit 1; }
 	install -Dm755 $< $@
 
 # Ignore sound
