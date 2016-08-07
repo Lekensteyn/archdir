@@ -55,6 +55,14 @@ fi
 # Append env $CMDLINE
 cmdline+="${CMDLINE:+ $CMDLINE}"
 
+# urandom should be good enough, certainly better than haveged.
+# https://www.redhat.com/archives/libvir-list/2016-April/msg00987.html
+# https://lists.fedoraproject.org/pipermail/devel/2012-March/165105.html
+args+=(
+    -object rng-random,id=urandom,filename=/dev/urandom
+    -device virtio-rng-pci,rng=urandom
+)
+
 args+=(
     -append "$cmdline"
 )

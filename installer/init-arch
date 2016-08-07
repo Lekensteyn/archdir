@@ -18,7 +18,7 @@ mounts='/etc/resolv.conf /etc/localtime'
 mounts+=' /etc/pacman.d'
 cleanup() {
     #bash -i || :
-    for pidfile in /run/haveged.pid /run/dhclient.pid; do
+    for pidfile in /run/dhclient.pid; do
         pkill -F $pidfile || :
         rm -f $pidfile
     done
@@ -35,8 +35,6 @@ cd $1
 # Create etc and other necessary skeleton
 mkdir -p etc/pacman.d
 
-# Start services for hwrng and networking
-haveged -p /run/haveged.pid -w 1024
 # dhclient-script writes /etc/resolv.conf
 sed "s,/etc/resolv\.conf,.&,g" /usr/bin/dhclient-script > /run/dhclient-script
 chmod 755 /run/dhclient-script
