@@ -35,6 +35,19 @@ cd $1
 # Create etc and other necessary skeleton
 mkdir -p etc/pacman.d
 
+# Noticing that pacman-key --init is hanging even with a hwrng device? It
+# happens because of http://www.spinics.net/lists/linux-crypto/msg20996.html
+# (Fixed by 3371f3da08 "random: initialize the non-blocking pool via
+# add_hwgenerator_randomness()"). Still present in 4.6.6, 4.7, fixed in 4.8-rc1
+#
+# Workaround: Drain entropy from the blocking pool. The first time there is
+# enough entropy, so nothing is transferred from the input pool (see
+# xfer_secondary_pool). The second time it will perform the transfer, notice
+# there is enough entropy and initialize the nonblocking pool which lets
+# getrandom() continue.  NB. 512 is the maximum effective size (SEC_XFER_SIZE).
+dd if=/dev/random of=/dev/null bs=512 count=1 status=none
+dd if=/dev/random of=/dev/null bs=512 count=1 status=none
+
 # dhclient-script writes /etc/resolv.conf
 sed "s,/etc/resolv\.conf,.&,g" /usr/bin/dhclient-script > /run/dhclient-script
 chmod 755 /run/dhclient-script
