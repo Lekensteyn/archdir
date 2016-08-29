@@ -4,6 +4,12 @@ basedir=$(dirname "$(readlink -f "$0")")
 : ${SSHPORT=2222}
 : ${MEM:=4G}
 : ${CPUS:=$(($(nproc)-1))}
+: ${USERNET:=}
+
+# If $SSHPORT is set and non-empty, add it
+if [ -n "${SSHPORT}" ]; then
+    USERNET="hostfwd=tcp:0:$SSHPORT-:22${USERNET:+,$USERNET}"
+fi
 
 cmdline='vga=792 quiet console=tty0 console=ttyS0,115200n8'
 
@@ -15,7 +21,7 @@ args=(
 
     -drive media=cdrom,if=virtio,file="$basedir/archlinux.iso"
 
-    -net user,hostfwd=tcp:0:$SSHPORT-:22
+    -net "user${USERNET:+,$USERNET}"
     -net nic,model=virtio
 
     -device usb-ehci # -device usb-kbd
