@@ -58,6 +58,7 @@ $(idir)/lib/modules/$(KVER): \
 	rsync -ra $^ $@ --include=gpu/drm/ \
 		$$(printf ' --include=%s***' \
 		fs/{9p,ext4,fscache,isofs,jbd2,squashfs}/ fs/mbcache.ko \
+		fs/crypto/ \
 		gpu/drm/{drm_kms_helper,drm}.ko gpu/drm/ttm/ \
 		scsi/{scsi,sr}_mod.ko \
 		net/{9p/,sched/,virtio_net.ko} \
