@@ -65,7 +65,8 @@ echo builder > etc/hostname
 #echo > etc/resolv.conf nameserver 10.0.2.3
 
 # Pacman (first try local mirror)
-mirror=http://10.0.2.2:8001
+gwaddr=$(ip route | awk '/default via/{print $3}')
+mirror=http://${gwaddr}:8001
 wget -q -t1 -T3 --spider $mirror/core/os/x86_64/core.db || mirror=
 echo "Local pacman packages mirror: ${mirror:-(none)}"
 printf 'Server = %s/$repo/os/$arch\n' > etc/pacman.d/mirrorlist \

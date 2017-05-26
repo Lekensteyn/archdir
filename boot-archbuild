@@ -7,7 +7,7 @@ basedir=$(dirname "$(readlink -f "$0")")
 : ${USERNET:=}
 
 # If $SSHPORT is set and non-empty, add it
-if [ -n "${SSHPORT}" ]; then
+if [ -n "${SSHPORT}" ] && [[ "$USERNET" != none ]]; then
     USERNET="hostfwd=tcp:0:$SSHPORT-:22${USERNET:+,$USERNET}"
 fi
 
@@ -21,7 +21,6 @@ args=(
 
     -drive media=cdrom,if=virtio,file="$basedir/archlinux.iso"
 
-    -net "user${USERNET:+,$USERNET}"
     -net nic,model=virtio
 
     -device usb-ehci # -device usb-kbd
@@ -29,6 +28,11 @@ args=(
     -m $MEM -smp $CPUS
     # -vnc :0
 )
+
+# For custom networking (e.g. -net bridge), disable user net with USERNET=none
+if [[ "$USERNET" != none ]]; then
+    args+=(-net "user${USERNET:+,$USERNET}")
+fi
 
 if [ $# -gt 0 ] && [[ $1 != -* ]]; then
     if [ ! -d "$1" ]; then
