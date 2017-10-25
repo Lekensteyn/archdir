@@ -24,8 +24,11 @@ cleanup() {
     done
     rm -f /run/dhclient-script
     # Kill pacman's gpg agent.
-    killall gpg-agent
-    umount $mounts || :
+    killall gpg-agent dirmngr
+    if ! umount $mounts; then
+        echo 'Failed to unmount, pending processes:'
+        ps aux | awk '$11 !~ /^\[/'
+    fi
 }
 # Ensure that no services are running when done
 trap cleanup EXIT
