@@ -158,6 +158,7 @@ cat > etc/systemd/system/builder.service <<EOF
 [Unit]
 Description=Invoke script from builder
 Requires=shared.mount
+After=shared.mount
 
 [Service]
 Type=oneshot
