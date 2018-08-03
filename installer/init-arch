@@ -91,12 +91,17 @@ pacman-key --gpgdir etc/pacman.d/gnupg --init &&
 pacman-key --gpgdir etc/pacman.d/gnupg --populate archlinux
 #pacman-key --gpgdir etc/pacman.d/gnupg --refresh-keys || :
 
-# Base installation (-M avoid mirrorlist copy -G avoid gpg copy)
+# Workaround for very slow gnupg installation (which takes 128s)
+mkdir -p usr/local/sbin
+ln -s /bin/true usr/local/sbin/dirmngr
+
+# Base installation (-M avoid mirrorlist)
 pacstrap -C etc/pacman.conf -M . base base-devel
 # Restore files
 for file in etc/resolv.conf etc/pacman.{conf,d/mirrorlist}; do
     [ ! -e $file.pacorig ] || mv -f $file.pacorig $file
 done
+rm usr/local/sbin/dirmngr
 pacman() {
     command pacman -r . --config etc/pacman.conf \
         --cachedir=var/cache/pacman/pkg \
