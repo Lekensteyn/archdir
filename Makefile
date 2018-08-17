@@ -61,7 +61,7 @@ $(idir)/lib/modules/$(KVER): \
 		fs/crypto/ \
 		gpu/drm/{bochs_drm,drm_kms_helper,drm}.ko gpu/drm/ttm/ \
 		scsi/{scsi,sr}_mod.ko \
-		net/{9p/,sched/,virtio_net.ko} \
+		net/{9p/,sched/,virtio_net.ko,net_failover.ko,core/} \
 	) $$(printf ' --exclude=%s' \
 		sound/ media/ staging/ wireless/ ethernet/ usb/ \
 		infinibind/ isdn/ hwmon/ netfilter/ md/ \
