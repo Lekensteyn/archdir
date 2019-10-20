@@ -19,7 +19,7 @@ mountpoints='proc sys dev dev/pts dev/shm run'
 
 # Load modules after /proc/modules becomes available.
 mods='atkbd virtio_ring virtio virtio_net virtio_pci virtio_blk 9pnet_virtio'
-mods="$mods virtio_rng isofs loop squashfs ext4"
+mods="$mods virtio_rng isofs loop squashfs ext4 9p"
 # convention from systemd-modules-load.service
 mods="$mods $(grep -o 'modules-load=[^ ]*' /proc/cmdline | cut -d= -f2 | tr , ' ')"
 [ ! -d /lib/modules/`uname -r` ] || \
@@ -55,6 +55,8 @@ mv installer arch/run/ins && chroot arch run/ins/init-arch mnt && rm -r run/ins
 umount $unmounts arch sqfs archiso
 
 # In case the kernel is different and current kernel modules are available.
+# (or if linux is not installed as is the case since October 2019.)
+mkdir -p /target/lib/modules
 [ -d /target/lib/modules/`uname -r` -o ! -d /lib/modules/`uname -r` ] || \
     cp -r /lib/modules/`uname -r` /target/lib/modules/
 
