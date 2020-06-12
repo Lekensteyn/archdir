@@ -62,6 +62,7 @@ ln -sf /usr/share/zoneinfo/Europe/Amsterdam etc/localtime
 
 # Networking.
 echo builder > etc/hostname
+ip link set lo up
 #ip link set eth0 up
 #ip addr add 10.0.2.15/24 dev eth0
 #ip route add default via 10.0.2.1
@@ -91,17 +92,12 @@ pacman-key --gpgdir etc/pacman.d/gnupg --init &&
 pacman-key --gpgdir etc/pacman.d/gnupg --populate archlinux
 #pacman-key --gpgdir etc/pacman.d/gnupg --refresh-keys || :
 
-# Workaround for very slow gnupg installation (which takes 128s)
-mkdir -p usr/local/sbin
-ln -s /bin/true usr/local/sbin/dirmngr
-
 # Base installation (-M avoid mirrorlist)
 pacstrap -C etc/pacman.conf -M . base base-devel
 # Restore files
 for file in etc/resolv.conf etc/pacman.{conf,d/mirrorlist}; do
     [ ! -e $file.pacorig ] || mv -f $file.pacorig $file
 done
-rm usr/local/sbin/dirmngr
 pacman() {
     command pacman -r . --config etc/pacman.conf \
         --cachedir=var/cache/pacman/pkg \
