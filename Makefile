@@ -3,7 +3,7 @@
 # do not set ARCHROOT use the current kernel version,
 # use an empty string for the latest kernel version in the current root.
 ifdef ARCHROOT
-KVER = $(notdir $(lastword $(sort $(wildcard $(ARCHROOT)/lib/modules/[0-9]*.*-ARCH))))
+KVER = $(notdir $(lastword $(sort $(wildcard $(ARCHROOT)/lib/modules/[0-9]*.*-arch*-*))))
 else
 KVER = $(shell uname -r)
 endif
@@ -48,6 +48,7 @@ $(idir)/bin/busybox: $(BUSYBOX)
 # ... grr too much work to filter useless ones
 KIMAGE = $(lastword $(wildcard \
 	$(ARCHROOT)/boot/vmlinuz-linux \
+	$(ARCHROOT)/lib/modules/$(KVER)/vmlinuz \
 	$(ARCHROOT)/boot/vmlinuz-$(KVER)))
 $(destdir)/bzImage: $(KIMAGE)
 	cp -va $< $@

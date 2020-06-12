@@ -18,7 +18,7 @@ mount -t tmpfs -o nosuid,nodev,mode=755 none run
 mountpoints='proc sys dev dev/pts dev/shm run'
 
 # Load modules after /proc/modules becomes available.
-mods='atkbd virtio_ring virtio virtio_net virtio_pci virtio_blk 9pnet_virtio'
+mods="atkbd virtio_net virtio_pci virtio_blk 9pnet_virtio"
 mods="$mods virtio_rng isofs loop squashfs ext4 9p"
 # convention from systemd-modules-load.service
 mods="$mods $(grep -o 'modules-load=[^ ]*' /proc/cmdline | cut -d= -f2 | tr , ' ')"
