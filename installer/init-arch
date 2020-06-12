@@ -18,11 +18,6 @@ mounts='/etc/resolv.conf /etc/localtime'
 mounts+=' /etc/pacman.d'
 cleanup() {
     #bash -i || :
-    for pidfile in /run/dhclient.pid; do
-        pkill -F $pidfile || :
-        rm -f $pidfile
-    done
-    rm -f /run/dhclient-script
     # Kill pacman's gpg agent and wait for it to die.
     killall -qw gpg-agent dirmngr || :
     if ! umount $mounts; then
@@ -51,11 +46,17 @@ mkdir -p etc/pacman.d
 dd if=/dev/random of=/dev/null bs=512 count=1 status=none
 dd if=/dev/random of=/dev/null bs=512 count=1 status=none
 
+# /etc/resolv.conf is a symlink to /run/systemd/resolve/stub-resolv.conf since
+# archiso v44 (first appearance in the 2020.06.01 iso).
+mkdir -p /run/systemd/resolve
+touch /run/systemd/resolve/stub-resolv.conf
+touch etc/resolv.conf
 # dhclient-script writes /etc/resolv.conf
 sed "s,/etc/resolv\.conf,.&,g" /usr/bin/dhclient-script > /run/dhclient-script
 chmod 755 /run/dhclient-script
-touch etc/resolv.conf
 dhclient -sf /run/dhclient-script -pf /run/dhclient.pid eth0
+pkill -F /run/dhclient.pid || :
+rm -f /run/dhclient.pid /run/dhclient-script
 
 # Time
 ln -sf /usr/share/zoneinfo/Europe/Amsterdam etc/localtime
