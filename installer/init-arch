@@ -154,6 +154,7 @@ Description=Shared folder using 9p
 What=shared
 Where=/shared
 Type=9p
+Options=msize=524288
 EOF
 
 cat > etc/systemd/system/builder.service <<EOF
