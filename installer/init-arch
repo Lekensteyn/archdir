@@ -72,7 +72,7 @@ ip link set lo up
 # Pacman (first try local mirror)
 gwaddr=$(ip route | awk '/default via/{print $3}')
 mirror=http://${gwaddr}:8001
-wget -q -t1 -T3 --spider $mirror/core/os/x86_64/core.db || mirror=
+curl -so /dev/null -Im3 --fail $mirror/core/os/x86_64/core.db || mirror=
 echo "Local pacman packages mirror: ${mirror:-(none)}"
 printf 'Server = %s/$repo/os/$arch\n' > etc/pacman.d/mirrorlist \
     $mirror \
@@ -138,8 +138,8 @@ wrfile() {
 }
 echo HISTCONTROL=ignoredups:ignorespace | wrfile -a .bashrc
 echo -e 'syntax on\nset number bg=dark smartindent hlsearch' | wrfile .vimrc
-wget -O - https://lekensteyn.nl/files/screenrc | wrfile .screenrc
-wget -O - https://lekensteyn.nl/sshkeys.txt | wrfile .ssh/authorized_keys
+curl https://lekensteyn.nl/files/screenrc | wrfile .screenrc
+curl https://lekensteyn.nl/sshkeys.txt | wrfile .ssh/authorized_keys
 
 rm -rf var/cache/pacman/pkg
 
