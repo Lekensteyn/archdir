@@ -57,16 +57,31 @@ $(idir)/lib/modules/$(KVER): \
 	$(wildcard $(ARCHROOT)/lib/modules/$(KVER)/modules.*)
 	mkdir -p $@
 	rsync -ra $^ $@ --include=gpu/drm/ \
+		--include=drivers/char/ --include=drivers/char/hw_random/ \
+		--include=drivers/input/ \
+		--include=drivers/input/{keyboard,serio}/ \
 		$$(printf ' --include=%s***' \
-		fs/{9p,ext4,fscache,isofs,jbd2,squashfs}/ fs/mbcache.ko \
+		char/hw_random/{rng-core,virtio-rng}.ko crypto/virtio/ \
+		drivers/block/{virtio_blk,loop}.ko \
+		drivers/input/{keyboard/atkbd,serio/{serio,libps2,i8042}}.ko \
+		fs/{9p,ext4,fscache,isofs,netfs,jbd2,squashfs}/ fs/mbcache.ko \
 		fs/crypto/ \
 		gpu/drm/{bochs_drm,drm_kms_helper,drm}.ko gpu/drm/ttm/ \
 		scsi/{scsi,sr}_mod.ko \
 		net/{9p/,sched/,virtio_net.ko,net_failover.ko,core/} \
 	) $$(printf ' --exclude=%s' \
 		sound/ media/ staging/ wireless/ ethernet/ usb/ \
-		infinibind/ isdn/ hwmon/ netfilter/ md/ \
+		infiniband/ isdn/ hwmon/ netfilter/ md/ \
+		drivers/{hid,iio,misc,mmc,platform,regulator,rtc,target}/ \
+		drivers/{watchdog,i2c,mtd,bluetooth,mfd,power,nfc,leds,nvme}/ \
+		drivers/{thunderbolt,atm,dma,spi,gpio,ata,crypto,tty}/ \
+		drivers/{video,accessibility,extcon,firewire}/ \
+		drivers/{message,edac,w1,xen,fpga,soundwire,ntb,hv,pcmcia}/ \
+		drivers/{block,char,input}/\*\*  \
 		{fs,gpu,scsi,net}/\*\*)
+	# busybox does not support zstd yet (Oct 2021), so remove compression.
+	# See https://github.com/facebook/zstd/issues/2806
+	find $@ -name '*.zst' -print0 | xargs -0 unzstd --rm
 
 FILES = init bin/busybox bin/sh
 FILES += lib/modules/$(KVER)
