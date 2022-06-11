@@ -63,7 +63,7 @@ $(idir)/lib/modules/$(KVER): \
 		$$(printf ' --include=%s***' \
 		char/hw_random/{rng-core,virtio-rng}.ko crypto/virtio/ \
 		drivers/block/{virtio_blk,loop}.ko \
-		drivers/input/{keyboard/atkbd,serio/{serio,libps2,i8042}}.ko \
+		drivers/input/{keyboard/atkbd,serio/{serio,libps2,i8042},vivaldi-fmap}.ko \
 		fs/{9p,ext4,fscache,isofs,netfs,jbd2,squashfs}/ fs/mbcache.ko \
 		fs/crypto/ \
 		gpu/drm/{bochs_drm,drm_kms_helper,drm}.ko gpu/drm/ttm/ \
