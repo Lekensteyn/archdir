@@ -76,9 +76,8 @@ curl -so /dev/null -Im3 --fail $mirror/core/os/x86_64/core.db || mirror=
 echo "Local pacman packages mirror: ${mirror:-(none)}"
 printf 'Server = %s/$repo/os/$arch\n' > etc/pacman.d/mirrorlist \
     $mirror \
-    http://ftp.nluug.nl/os/Linux/distr/archlinux/ \
-    http://mirror.nl.leaseweb.net/archlinux \
-    http://arch.apt-get.eu
+    https://ftp.nluug.nl/os/Linux/distr/archlinux/ \
+    https://mirror.nl.leaseweb.net/archlinux
 # the magic $repos expression uncomments some repos (if not enabled)
 sed -r /etc/pacman.conf > etc/pacman.conf \
     -e "/^#\[(${repos// /|})\]/{:s;s/^#//;n;/^#[A-Z]/bs}" \
@@ -88,10 +87,36 @@ for file in $mounts; do
     mount --bind .$file $file
 done
 
+# Avoid pacman-keyring warnings about process substitution.
+ln -snf /proc/self/fd /dev/fd
+
 # Avoid warnings when package signatures are outdated
 pacman-key --gpgdir etc/pacman.d/gnupg --init &&
 pacman-key --gpgdir etc/pacman.d/gnupg --populate archlinux
 #pacman-key --gpgdir etc/pacman.d/gnupg --refresh-keys || :
+# Alternative to updating archlinux-keyring, but it is slow:
+#sed -e 's#homedir=.*#homedir=$PWD/etc/pacman.d/gnupg#' /usr/bin/archlinux-keyring-wkd-sync | bash
+
+# Update keyring with the latest version to avoid untrusted signature errors.
+# Manually query the directory index instead of syncing core.db to save some
+# data and time.
+[ -n "$mirror" ] || mirror=https://ftp.nluug.nl/os/Linux/distr/archlinux/
+name=$(curl -s --compressed "$mirror/core/os/x86_64/" |
+    grep -Eom1 'archlinux-keyring-[0-9-]+-any\.pkg\.tar\.[a-z]+' | head -1)
+if [ -z "$name" ]; then
+    echo "Failed to query for archlinux-keyring from $mirror, ignoring..."
+else
+    echo "Updating keyring with $name..."
+    curl -fso "/run/$name.sig" "$mirror/core/os/x86_64/$name.sig"
+    curl -fso "/run/$name" "$mirror/core/os/x86_64/$name"
+    pacman-key --gpgdir etc/pacman.d/gnupg --verify "/run/$name.sig"
+    # Verified, now update our keyring.
+    mount -t tmpfs none /usr/share/pacman/keyrings
+    bsdtar xf "/run/$name" -C / usr/share/pacman/keyrings
+    pacman-key --gpgdir etc/pacman.d/gnupg --populate archlinux
+    umount /usr/share/pacman/keyrings
+    rm "/run/$name.sig" "/run/$name"
+fi
 
 # Base installation (-M avoid mirrorlist)
 pacstrap -C etc/pacman.conf -M . base base-devel
