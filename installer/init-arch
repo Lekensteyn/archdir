@@ -10,7 +10,7 @@ MYUID=$(grep -m1 -Po '\bapp\.uid=\K1\d+' /proc/cmdline || echo 1000)
 MYGID=$(grep -m1 -Po '\bapp\.gid=\K1\d+' /proc/cmdline || echo 1000)
 MYUSER=arch
 repos='core extra community'
-repos+=' testing community-testing'
+repos+=' core-testing extra-testing community-testing'
 #repos+=' multilib multilib-testing'
 
 mounts='/etc/resolv.conf /etc/localtime'
@@ -27,9 +27,14 @@ cleanup() {
 }
 # Ensure that no services are running when done
 trap cleanup EXIT
-#set -x # DEBUG
 
-cd $1
+# Print commands for debugging panics
+if grep -Pq '\bapp\.debug\b' /proc/cmdline; then
+    set -x
+fi
+
+cd "$1"
+chmod 755 .
 # Create etc and other necessary skeleton
 mkdir -p etc/pacman.d
 
@@ -81,7 +86,7 @@ printf 'Server = %s/$repo/os/$arch\n' > etc/pacman.d/mirrorlist \
 # the magic $repos expression uncomments some repos (if not enabled)
 sed -r /etc/pacman.conf > etc/pacman.conf \
     -e "/^#\[(${repos// /|})\]/{:s;s/^#//;n;/^#[A-Z]/bs}" \
-    -e "s/^#(Color|TotalDownload)/\1/"
+    -e "s/^#(Color|ParallelDownloads)/\1/"
 
 for file in $mounts; do
     mount --bind .$file $file
@@ -118,8 +123,12 @@ else
     rm "/run/$name.sig" "/run/$name"
 fi
 
+# Make /tmp writable since pacstrap copies pacman.conf to a file from mktemp.
+mount -t tmpfs none /tmp
+mounts+=' /tmp'
+
 # Base installation (-M avoid mirrorlist)
-pacstrap -C etc/pacman.conf -M . base base-devel
+time pacstrap -C etc/pacman.conf -M . base base-devel
 # Restore files
 for file in etc/resolv.conf etc/pacman.{conf,d/mirrorlist}; do
     [ ! -e $file.pacorig ] || mv -f $file.pacorig $file
