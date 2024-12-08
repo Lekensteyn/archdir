@@ -77,6 +77,7 @@ $(idir)/lib/modules/$(KVER): \
 		drivers/{thunderbolt,atm,dma,spi,gpio,ata,crypto,tty}/ \
 		drivers/{video,accessibility,extcon,firewire}/ \
 		drivers/{message,edac,w1,xen,fpga,soundwire,ntb,hv,pcmcia}/ \
+		drivers/{accel,vdpa,ufs,cxl,pinctrl,nvdimm,thermal,ptp,clk,memstick}/ \
 		drivers/{block,char,input}/\*\*  \
 		{fs,gpu,scsi,net}/\*\*)
 	# busybox does not support zstd yet (Oct 2021), so remove compression.
